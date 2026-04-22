@@ -14,6 +14,17 @@ export function Dashboard() {
   const stats = useCompetitorStats()
   const addBriefing = useAppStore((s) => s.addBriefing)
   const [showAdd, setShowAdd] = useState(false)
+  const [bfTitle, setBfTitle] = useState('')
+  const [bfSummary, setBfSummary] = useState('')
+  const [bfStatus, setBfStatus] = useState<BriefingStatus>('draft')
+
+  const resetForm = () => { setBfTitle(''); setBfSummary(''); setBfStatus('draft') }
+  const handleSave = () => {
+    if (!bfTitle) return
+    addBriefing({ id: generateId(), title: bfTitle, competitorId: '', status: bfStatus, generatedAt: new Date().toISOString(), summary: bfSummary || '' })
+    resetForm(); setShowAdd(false)
+  }
+  const handleCancel = () => { resetForm(); setShowAdd(false) }
 
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-900 dark:text-white transition-colors">
@@ -48,21 +59,14 @@ export function Dashboard() {
           </div>
           {showAdd && (
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 mb-3 space-y-2">
-              <input id="bf-title" placeholder={t('title')} className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-3 py-1.5 text-sm" />
-              <textarea id="bf-summary" placeholder={t('summary')} rows={2} className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-3 py-1.5 text-sm resize-none" />
-              <select id="bf-status" className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1.5 text-sm">
+              <input value={bfTitle} onChange={(e) => setBfTitle(e.target.value)} placeholder={t('title')} className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-3 py-1.5 text-sm" />
+              <textarea value={bfSummary} onChange={(e) => setBfSummary(e.target.value)} placeholder={t('summary')} rows={2} className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-3 py-1.5 text-sm resize-none" />
+              <select value={bfStatus} onChange={(e) => setBfStatus(e.target.value as BriefingStatus)} className="w-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-2 py-1.5 text-sm">
                 {Object.entries(BRIEFING_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
               <div className="flex gap-2">
-                <button onClick={() => {
-                  const title = (document.getElementById('bf-title') as HTMLInputElement).value
-                  const summary = (document.getElementById('bf-summary') as HTMLTextAreaElement).value
-                  const status = (document.getElementById('bf-status') as HTMLSelectElement).value as BriefingStatus
-                  if (!title) return
-                  addBriefing({ id: generateId(), title, competitorId: '', status, generatedAt: new Date().toISOString(), summary: summary || '' })
-                  setShowAdd(false)
-                }} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('save')}</button>
-                <button onClick={() => setShowAdd(false)} className="text-xs text-slate-400">{t('cancel')}</button>
+                <button onClick={handleSave} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('save')}</button>
+                <button onClick={handleCancel} className="text-xs text-slate-400">{t('cancel')}</button>
               </div>
             </div>
           )}

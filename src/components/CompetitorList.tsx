@@ -13,10 +13,29 @@ export function CompetitorList() {
   const deleteCompetitor = useAppStore((s) => s.deleteCompetitor)
   const addCompetitor = useAppStore((s) => s.addCompetitor)
   const addSource = useAppStore((s) => s.addSource)
-  const deleteSource = useAppStore((s) => s.deleteSource)
-  const updateSource = useAppStore((s) => s.updateSource)
   const [showAdd, setShowAdd] = useState(false)
   const [showAddSource, setShowAddSource] = useState(false)
+  const [compName, setCompName] = useState('')
+  const [compWeb, setCompWeb] = useState('')
+  const [srcType, setSrcType] = useState<SourceType>('website')
+  const [srcLabel, setSrcLabel] = useState('')
+
+  const resetCompForm = () => { setCompName(''); setCompWeb('') }
+  const resetSrcForm = () => { setSrcType('website'); setSrcLabel('') }
+
+  const handleSaveCompetitor = () => {
+    if (!compName) return
+    addCompetitor({ id: Math.random().toString(36).substring(2, 10) + Date.now().toString(36), name: compName, website: compWeb || '', lastUpdated: new Date().toISOString().split('T')[0], alertCount: 0 })
+    resetCompForm(); setShowAdd(false)
+  }
+
+  const handleSaveSource = () => {
+    if (!srcLabel || !selectedCompetitor) return
+    addSource({ id: Math.random().toString(36).substring(2, 10) + Date.now().toString(36), competitorId: selectedCompetitor, type: srcType, label: srcLabel, active: true })
+    resetSrcForm(); setShowAddSource(false)
+  }
+
+  const competitorSources = (cid: string) => sources.filter((s) => s.competitorId === cid)
 
   if (competitors.length === 0 && !showAdd) return (
     <div className="space-y-2">
@@ -24,8 +43,6 @@ export function CompetitorList() {
       <button onClick={() => setShowAdd(true)} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('addCompetitor')}</button>
     </div>
   )
-
-  const competitorSources = (cid: string) => sources.filter((s) => s.competitorId === cid)
 
   return (
     <div className="space-y-3">
@@ -57,35 +74,23 @@ export function CompetitorList() {
       ))}
       {showAddSource && selectedCompetitor && (
         <div className="bg-slate-800/50 rounded-lg p-3 space-y-2">
-          <select id="src-type" className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-sm">
+          <select value={srcType} onChange={(e) => setSrcType(e.target.value as SourceType)} className="w-full bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-sm">
             {Object.entries(SOURCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
-          <input id="src-label" placeholder={t('name')} className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm" />
+          <input value={srcLabel} onChange={(e) => setSrcLabel(e.target.value)} placeholder={t('name')} className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm" />
           <div className="flex gap-2">
-            <button onClick={() => {
-              const type = (document.getElementById('src-type') as HTMLSelectElement).value as SourceType
-              const label = (document.getElementById('src-label') as HTMLInputElement).value
-              if (!label) return
-              addSource({ id: Math.random().toString(36).substring(2, 10) + Date.now().toString(36), competitorId: selectedCompetitor, type, label, active: true })
-              setShowAddSource(false)
-            }} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('save')}</button>
-            <button onClick={() => setShowAddSource(false)} className="text-xs text-slate-400">{t('cancel')}</button>
+            <button onClick={handleSaveSource} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('save')}</button>
+            <button onClick={() => { resetSrcForm(); setShowAddSource(false) }} className="text-xs text-slate-400">{t('cancel')}</button>
           </div>
         </div>
       )}
       {showAdd ? (
         <div className="bg-slate-800/50 rounded-lg p-3 space-y-2">
-          <input id="comp-name" placeholder={t('name')} className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm" />
-          <input id="comp-web" placeholder={t('website')} className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm" />
+          <input value={compName} onChange={(e) => setCompName(e.target.value)} placeholder={t('name')} className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm" />
+          <input value={compWeb} onChange={(e) => setCompWeb(e.target.value)} placeholder={t('website')} className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-1.5 text-sm" />
           <div className="flex gap-2">
-            <button onClick={() => {
-              const name = (document.getElementById('comp-name') as HTMLInputElement).value
-              const website = (document.getElementById('comp-web') as HTMLInputElement).value
-              if (!name) return
-              addCompetitor({ id: Math.random().toString(36).substring(2, 10) + Date.now().toString(36), name, website: website || '', lastUpdated: new Date().toISOString().split('T')[0], alertCount: 0 })
-              setShowAdd(false)
-            }} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('save')}</button>
-            <button onClick={() => setShowAdd(false)} className="text-xs text-slate-400">{t('cancel')}</button>
+            <button onClick={handleSaveCompetitor} className="text-xs bg-violet-600 hover:bg-violet-500 px-3 py-1 rounded">{t('save')}</button>
+            <button onClick={() => { resetCompForm(); setShowAdd(false) }} className="text-xs text-slate-400">{t('cancel')}</button>
           </div>
         </div>
       ) : (
