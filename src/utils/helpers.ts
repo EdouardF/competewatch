@@ -1,4 +1,4 @@
-import type { SourceType, AlertSeverity, BriefingStatus } from '../types'
+import type { SourceType, AlertSeverity, BriefingStatus, Competitor, Alert } from '../types'
 
 export const SOURCE_LABELS: Record<SourceType, string> = { changelog: 'Changelog', g2: 'G2 Reviews', social: 'Social Media', news: 'News', manual: 'Manual' }
 export const SOURCE_COLORS: Record<SourceType, string> = { changelog: 'text-blue-400', g2: 'text-emerald-400', social: 'text-purple-400', news: 'text-amber-400', manual: 'text-slate-400' }
@@ -10,4 +10,23 @@ export const BRIEFING_STATUS_LABELS: Record<BriefingStatus, string> = { draft: '
 export const BRIEFING_STATUS_COLORS: Record<BriefingStatus, string> = { draft: 'bg-slate-500/20 text-slate-400', ready: 'bg-emerald-500/20 text-emerald-400', sent: 'bg-blue-500/20 text-blue-400' }
 
 export function formatDate(dateStr: string): string { const d = new Date(dateStr); return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }
+
+export function filterCompetitors(competitors: Competitor[], query?: string): Competitor[] {
+  if (!query) return competitors
+  const q = query.toLowerCase()
+  return competitors.filter((c) => c.name.toLowerCase().includes(q) || c.website.toLowerCase().includes(q))
+}
+
+export function sortCompetitors(competitors: Competitor[], sortBy: 'date' | 'name'): Competitor[] {
+  const result = [...competitors]
+  if (sortBy === 'date') result.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
+  else result.sort((a, b) => a.name.localeCompare(b.name))
+  return result
+}
+
+export function filterAlerts(alerts: Alert[], severity?: AlertSeverity): Alert[] {
+  if (!severity) return alerts
+  return alerts.filter((a) => a.severity === severity)
+}
+
 export function generateId(): string { return Math.random().toString(36).substring(2, 10) + Date.now().toString(36) }

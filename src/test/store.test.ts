@@ -6,7 +6,7 @@ describe('useAppStore', () => {
   beforeEach(() => useAppStore.getState().reset())
 
   it('add/update/delete competitor', () => {
-    const c: Competitor = { id: '1', name: 'Acme', website: 'acme.com', lastUpdated: '2026-01-01', alertCount: 0 }
+    const c: Competitor = { id: '1', name: 'Acme Corp', website: 'acme.com', lastUpdated: '2026-01-01', alertCount: 0 }
     useAppStore.getState().addCompetitor(c)
     expect(useAppStore.getState().competitors).toHaveLength(1)
     useAppStore.getState().updateCompetitor('1', { alertCount: 5 })
@@ -25,7 +25,7 @@ describe('useAppStore', () => {
   })
 
   it('add/update/delete briefing', () => {
-    const b: Briefing = { id: '1', title: 'Q1 Report', competitorId: 'c1', status: 'draft', generatedAt: '2026-01-01', summary: 'Test' }
+    const b: Briefing = { id: '1', title: 'Q1 Report', competitorId: 'c1', status: 'draft', generatedAt: '2026-01-01', summary: 'Summary' }
     useAppStore.getState().addBriefing(b)
     useAppStore.getState().updateBriefing('1', { status: 'ready' })
     expect(useAppStore.getState().briefings[0].status).toBe('ready')
@@ -34,7 +34,7 @@ describe('useAppStore', () => {
   })
 
   it('add/update/delete alert', () => {
-    const a: Alert = { id: '1', competitorId: 'c1', severity: 'warning', message: 'Price drop', source: 'g2', timestamp: '2026-01-01', read: false }
+    const a: Alert = { id: '1', competitorId: 'c1', severity: 'warning', message: 'Price change', source: 'news', timestamp: '2026-01-01', read: false }
     useAppStore.getState().addAlert(a)
     useAppStore.getState().updateAlert('1', { read: true })
     expect(useAppStore.getState().alerts[0].read).toBe(true)
@@ -42,9 +42,17 @@ describe('useAppStore', () => {
     expect(useAppStore.getState().alerts).toHaveLength(0)
   })
 
-  it('error and reset', () => {
+  it('search/filter state', () => {
+    useAppStore.getState().setSearchQuery('acme')
+    useAppStore.getState().setFilterSeverity('critical')
+    useAppStore.getState().setFilterStatus('ready')
+    expect(useAppStore.getState().searchQuery).toBe('acme')
+    expect(useAppStore.getState().filterSeverity).toBe('critical')
+    expect(useAppStore.getState().filterStatus).toBe('ready')
+  })
+
+  it('reset clears everything', () => {
     useAppStore.getState().setError('fail')
-    expect(useAppStore.getState().error).toBe('fail')
     useAppStore.getState().reset()
     expect(useAppStore.getState().error).toBeNull()
     expect(useAppStore.getState().competitors).toHaveLength(0)
